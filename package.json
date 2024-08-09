@@ -1,0 +1,18 @@
+{
+  "name": "reactite",
+  "version": "0.0.1",
+  "description": "This is a simple react-native orm for sqlite3.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react-native",
+    "orm",
+    "sqlite3",
+    "expo",
+    "react-native-sqlite3"
+  ],
+  "author": "Crispen Gari <crispengari@gmail.com> (https://crispen-gari.web.app/#/home)",
+  "license": "MIT"
+}
