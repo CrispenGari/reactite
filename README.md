@@ -15,6 +15,17 @@
 - [`useCreateTable`](#usecreatetable)
   - [`Arguments`](#arguments)
   - [`Return Values`](#return-values)
+- [`useCreateTables` hook](#usecreatetables-hook)
+- [`useTables()` hook](#usetables-hook)
+- [`useDatabaseName` hook](#usedatabasename-hook)
+- [`useQuery()` hook](#usequery-hook)
+- [`useMutation()` hook](#usemutation-hook)
+- [`useQueryByPK()` hook](#usequerybypk-hook)
+  - [`Arguments`](#arguments-1)
+  - [`Return Values`](#return-values-1)
+- [`useQueryByPKs` hook.](#usequerybypks-hook)
+  - [`Arguments`](#arguments-2)
+  - [`Return Values`](#return-values-2)
 
 ### Key Features
 
@@ -145,3 +156,102 @@ The following are the return values from the `useCreateTable` hook:
 | `error`     | `Error \|null` | Contains any error that occurred during the table creation process. |
 | `sql`       | `string[]`     | The generated SQL statements used to create the table.              |
 | `tableName` | `string`       | The name of the table that was created created.                     |
+
+### `useCreateTables` hook
+
+This hook is used to create multiple tables at once.
+
+### `useTables()` hook
+
+This hook allows you to get all the table names in your `sqlite` database.
+
+```tsx
+const { tables, loading } = useTables();
+```
+
+### `useDatabaseName` hook
+
+This hook is used to get the currenly connected database name with `reactite`.
+
+```ts
+const { db } = useDatabaseName();
+```
+
+### `useQuery()` hook
+
+### `useMutation()` hook
+
+### `useQueryByPK()` hook
+
+The `useQueryByPK()` hook is designed to retrieve a record from a table in your SQLite database based on a primary key. It also allows you to specify which columns to retrieve. To use the `useQueryByPK()` hook, call it within your functional component, passing in the table name, an array of primary key values, and an optional array of column names you wish to retrieve. The hook returns an object containing the queried data and other useful states.
+
+```tsx
+import { useQueryByPK } from "reactite";
+....
+
+const { data, error, querying, status, success, refetchQuery } = useQueryByPK<
+  {
+    id: string;
+    username: string;
+  },
+  number
+>("users", 8, ["id", "username"]);
+
+```
+
+#### `Arguments`
+
+| Argument    | Type                 | Description                                                                                                                            |
+| ----------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `tableName` | `string`             | The name of the table from which to query the record.                                                                                  |
+| `pk`        | `string \| number`   | The primary key value of the record you want to retrieve. Allows either a string or number type based on the table's primary key type. |
+| `select`    | `string \| string[]` | An optional array of column names or a single column name to include in the result.                                                    |
+
+#### `Return Values`
+
+| Property       | Type                                         | Description                                                                                       |
+| -------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `data`         | `TData \| null`                              | The record retrieved from the database based on the primary key, or `null` if no record is found. |
+| `error`        | `string \| null`                             | Contains the error message if the query fails, otherwise `null`.                                  |
+| `querying`     | `boolean`                                    | Indicates whether the query is currently in progress.                                             |
+| `status`       | `"error" \| "success" \| "querying" \| null` | The current status of the query (`error`, `success`, `querying`, or `null`).                      |
+| `success`      | `boolean`                                    | Indicates whether the query was successful.                                                       |
+| `refetchQuery` | `Function`                                   | A function to refetch the query.                                                                  |
+
+### `useQueryByPKs` hook.
+
+The `useQueryByPKs()` hook is designed to retrieve multiple records from a table in your SQLite database based on an array of primary keys. It also allows you to specify which columns to retrieve.
+
+```tsx
+import { useQueryByPKs } from "reactite";
+....
+
+ const { data, error, querying, status, success, refetchQuery } =
+    useQueryByPKs<
+      {
+        id: string;
+        username: string;
+      },
+      number
+    >("users", [3, 8], ["id", "username"]);
+
+```
+
+#### `Arguments`
+
+| Argument    | Type                 | Description                                                                                                                                                |
+| ----------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tableName` | `string`             | The name of the table from which to query the records.                                                                                                     |
+| `pks`       | `Array<TPK>`         | An array of primary key values for the records you want to retrieve. `TPK` can be either a `string` or `number` depending on the table's primary key type. |
+| `select`    | `string \| string[]` | An optional array of column names or a single column name to include in the result.                                                                        |
+
+#### `Return Values`
+
+| Property       | Type                                         | Description                                                                                             |
+| -------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `data`         | `TData[] \| null`                            | The records retrieved from the database based on the primary key(s), or `null` if no records are found. |
+| `error`        | `string \| null`                             | Contains the error message if the query fails, otherwise `null`.                                        |
+| `querying`     | `boolean`                                    | Indicates whether the query is currently in progress.                                                   |
+| `status`       | `"error" \| "success" \| "querying" \| null` | The current status of the query (`error`, `success`, `querying`, or `null`).                            |
+| `success`      | `boolean`                                    | Indicates whether the query was successful.                                                             |
+| `refetchQuery` | `Function`                                   | A function to refetch the query.                                                                        |
