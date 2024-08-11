@@ -45,12 +45,12 @@ export const useCreateTable = (
       return [
         "id INT PRIMARY KEY",
         ...Object.entries(fields).map(([name, f]) =>
-          `\`${name}\` ${f.stmt().stmt} `.trim()
+          `\`${name}\` ${f.stmt()} `.trim()
         ),
       ];
     }
     return Object.entries(fields).map(([name, f]) =>
-      `\`${name}\` ${f.stmt().stmt} `.trim()
+      `\`${name}\` ${f.stmt()} `.trim()
     );
   }, [fields, primaryKeyCount]);
 
