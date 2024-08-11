@@ -1,6 +1,6 @@
 ### reactite
 
-`reactite` is a powerful and lightweight ORM designed specifically for React Native applications using `SQLite3`. It simplifies database management, offering a seamless way to interact with SQLite databases within your React Native apps.
+`reactite` is a powerful and lightweight `ORM` designed specifically for React Native applications using `SQLite3`. It simplifies database management, offering a seamless way to interact with SQLite databases within your React Native apps.
 
 ### Table of Contents
 
@@ -19,13 +19,18 @@
 - [`useTables()` hook](#usetables-hook)
 - [`useDatabaseName` hook](#usedatabasename-hook)
 - [`useQuery()` hook](#usequery-hook)
-- [`useMutation()` hook](#usemutation-hook)
-- [`useQueryByPK()` hook](#usequerybypk-hook)
   - [`Arguments`](#arguments-1)
   - [`Return Values`](#return-values-1)
-- [`useQueryByPKs` hook.](#usequerybypks-hook)
+  - [`Usage Notes`](#usage-notes)
+- [`useMutation()` hook](#usemutation-hook)
+- [`useQueryByPK()` hook](#usequerybypk-hook)
   - [`Arguments`](#arguments-2)
   - [`Return Values`](#return-values-2)
+- [`useQueryByPKs` hook.](#usequerybypks-hook)
+  - [`Arguments`](#arguments-3)
+  - [`Return Values`](#return-values-3)
+- [`Operands`](#operands)
+- [`Filters`](#filters)
 
 ### Key Features
 
@@ -179,6 +184,46 @@ const { db } = useDatabaseName();
 
 ### `useQuery()` hook
 
+The `useQuery()` hook is a powerful utility for retrieving records from an `SQLite` database within a React Native application. It allows you to perform SQL queries while managing the state of the query process, including loading, success, and error states.
+
+```tsx
+const { data, error, querying, status, success, refetchQuery } = useQuery<
+  {
+    username: string;
+    id: number;
+  }[],
+  any
+>("users", flt.eq("id", 2), ["id", "username"]);
+```
+
+#### `Arguments`
+
+| Argument    | Type                                                    | Description                                                                                                                                                           |
+| ----------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tableName` | `string`                                                | The name of the table from which you want to retrieve data.                                                                                                           |
+| `filters`   | `TFilter<TValue>` \| `TOperator<TValue>` \| `undefined` | Filters or conditions to be applied to the query, such as equality checks, ranges, etc. Can be an [operator](#operands) or [filter](#filters) provided by `reactite`. |
+| `select`    | `string` \| `string[]` \| `undefined`                   | The columns you want to retrieve from the table. If not provided, all columns are selected by default.                                                                |
+
+#### `Return Values`
+
+The `useQuery()` hook returns an object containing the following properties:
+
+| Property       | Type                                         | Description                                                                                    |
+| -------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `refetchQuery` | `() => Promise<void>`                        | A function to manually re-execute the query, useful for refreshing the data.                   |
+| `querying`     | `boolean`                                    | Indicates whether the query is currently being executed.                                       |
+| `data`         | `TData \| null`                              | The records retrieved by the query, or `null` if no data is found or the query hasn't run yet. |
+| `error`        | `string \| null`                             | Contains error information if the query fails, otherwise `null`.                               |
+| `status`       | `"error" \| "success" \| "querying" \| null` | Represents the current status of the query (e.g., querying, success, error, or null if idle).  |
+| `success`      | `boolean`                                    | Indicates whether the query was successful.                                                    |
+
+#### `Usage Notes`
+
+- The `useQuery()` hook is essential for fetching and displaying data from an SQLite database in your React Native components.
+- Use the `refetchQuery` method to manually refresh the data when needed, such as in response to user actions.
+- The `querying` state is useful for displaying loading indicators during data fetching.
+- The `error` and `status` properties provide detailed error handling, allowing you to respond appropriately to query failures.
+
 ### `useMutation()` hook
 
 ### `useQueryByPK()` hook
@@ -218,6 +263,8 @@ const { data, error, querying, status, success, refetchQuery } = useQueryByPK<
 | `success`      | `boolean`                                    | Indicates whether the query was successful.                                                       |
 | `refetchQuery` | `Function`                                   | A function to refetch the query.                                                                  |
 
+> 👍 **Note**: The difference between `useQuery` and `useQueryByPK` is that the former takes in filters, while the latter uses your primary key column to retrieve a single record by its value.
+
 ### `useQueryByPKs` hook.
 
 The `useQueryByPKs()` hook is designed to retrieve multiple records from a table in your SQLite database based on an array of primary keys. It also allows you to specify which columns to retrieve.
@@ -255,3 +302,62 @@ import { useQueryByPKs } from "reactite";
 | `status`       | `"error" \| "success" \| "querying" \| null` | The current status of the query (`error`, `success`, `querying`, or `null`).                            |
 | `success`      | `boolean`                                    | Indicates whether the query was successful.                                                             |
 | `refetchQuery` | `Function`                                   | A function to refetch the query.                                                                        |
+
+> 👍 **Note**: The difference between `useQueryByPK` and `useQueryByBKs` is that the former takes in a single value of id, while the latter uses list or array primary keys to retrieve records by their primary keys.
+
+### `Operands`
+
+The `reactite` operands allows you to use one or more [`filters`](#filters) in a query.
+
+```tsx
+import { flt, op } from "reactite";
+
+// ....
+
+const { data, error, querying, status, success, refetchQuery } = useQuery<
+  {
+    username: string;
+    id: number;
+  }[],
+  any
+>("users", op.or(flt.notIn("id", [8, 9]), flt.eq("id", 9)), ["id", "username"]);
+```
+
+Here are the supported `operands` in `reactite`.
+
+| Operation | Explanation                                                                                                                                           | Example                                                                          |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **`and`** | Combines multiple [`filter`](#filters) conditions using a logical `AND`. All specified conditions must be true for the query to match.                | `op.and(filter1, filter2)` generates a SQL condition like `filter1 AND filter2`. |
+| **`or`**  | Combines multiple [`filter`](#filters) conditions using a logical `OR`. At least one of the specified conditions must be true for the query to match. | `op.or(filter1, filter2)` generates a SQL condition like `filter1 OR filter2`.   |
+
+### `Filters`
+
+You can get all the supported filters from `reactite` as follows:
+
+```tsx
+import {flt} from `reactite`
+
+ const { data, error, querying, status, success, refetchQuery } = useQuery<
+    {
+      username: string;
+      id: number;
+    }[],
+    any
+  >("users", flt.in("id", [8, 9]), ["id", "username"]);
+```
+
+Here are the filters that can be applied within `queries` and `mutations`.
+
+| Filter    | Explanation                                                                                    | Example                                          |
+| --------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `eq`      | Indicates equality. It checks if the value is equal to the specified criteria.                 | `column = $columnValue`                          |
+| `neq`     | Indicates inequality. It checks if the value is not equal to the specified criteria.           | `column != $columnValue`                         |
+| `in`      | Checks if the value is within a specified list of values.                                      | `column IN ($value1, $value2, ...)`              |
+| `notIn`   | Checks if the value is not within a specified list of values.                                  | `column NOT IN ($value1, $value2, ...)`          |
+| `lt`      | Checks if the value is less than the specified criteria.                                       | `column < $columnValue`                          |
+| `leq`     | Checks if the value is less than or equal to the specified criteria.                           | `column <= $columnValue`                         |
+| `gt`      | Checks if the value is greater than the specified criteria.                                    | `column > $columnValue`                          |
+| `geq`     | Checks if the value is greater than or equal to the specified criteria.                        | `column >= $columnValue`                         |
+| `like`    | Checks if the value matches a specified pattern.                                               | `column LIKE $columnValue`                       |
+| `not`     | Checks if the value does not equal the specified criteria.                                     | `NOT column = $columnValue`                      |
+| `between` | Checks if the value is between two specified values. Requires exactly two values in the array. | `column BETWEEN $columnValue1 AND $columnValue2` |
