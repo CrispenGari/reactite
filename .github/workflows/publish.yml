@@ -1,0 +1,41 @@
+name: 🚀Publish🔥
+on:
+  release:
+    types: [published]
+
+concurrency: ${{ github.workflow}}-${{github.ref}}
+
+jobs:
+  release:
+    name: 🚀🚀 Building the Package
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./
+
+    steps:
+      - name: 🚀 Checkout Github Repository
+        uses: actions/checkout@v4
+
+      - name: 🚀 Setup Nodejs and NPM
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: 🚀 Installing Packages using Yarn
+        run: yarn install
+
+      - name: 🚀 Linting and building
+        run: yarn lint && yarn build
+
+      - name: 🚀 Create Realease Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: yarn release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
