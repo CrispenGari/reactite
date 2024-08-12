@@ -1,8 +1,27 @@
 import * as SQLite from "expo-sqlite";
+import { field } from "../field";
 
 export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
+
+export type TCallBacks<TData, TStatus> = {
+  onError?: (error: { message: string; status: TStatus }) => void;
+  onSuccess?: (result: {
+    data: TData | TData[] | null;
+    status: TStatus;
+  }) => void;
+  onSettled?: (result: {
+    data: TData | TData[] | null;
+    status: TStatus;
+  }) => void;
+  onStart?: (status: { data: TData | TData[] | null; status: TStatus }) => void;
+  onFinish?: (result: {
+    data: TData | TData[] | null;
+    status: TStatus;
+  }) => void;
+  onData?: (result: { data: TData | TData[] | null; status: TStatus }) => void;
+};
 
 export interface ReactiteClientProps {
   dbName: string;
@@ -35,10 +54,17 @@ export type DefaultValue<T extends SQLITE_TYPE> = T extends "INTEGER"
   : undefined;
 
 export type CreateTableOptions = {
-  timestamps?: boolean;
   skipIfExist?: boolean;
+  timestamps?: boolean;
+  snakeCase?: boolean;
 };
 
+export type TTable = Prettify<
+  Record<"fields", Record<string, typeof field>> &
+    Partial<Record<"timestamps", boolean>> &
+    Partial<Record<"snakeCase", boolean>> &
+    Partial<Record<"skipIfExist", boolean>>
+>;
 export type FieldType<T extends SQLITE_TYPE = SQLITE_TYPE> = {
   type: T;
   autoIncrement?: boolean;

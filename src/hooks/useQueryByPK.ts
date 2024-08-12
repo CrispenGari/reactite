@@ -1,19 +1,28 @@
 import React from "react";
 import { useReactiteClient } from "./useReactiteClient";
 import { getPKColumnName } from "../utils";
+import { TCallBacks } from "../types";
 
+type TStatus = "error" | "success" | "querying" | null;
 type TState<T> = {
   querying: boolean;
   data: T | null;
   error: string | null;
-  status: "error" | "success" | "querying" | null;
+  status: TStatus;
   success: boolean;
 };
-
 export const useQueryByPK = <TData extends object, TPK extends string | number>(
   tableName: string,
   pk: TPK,
-  select?: string | string[]
+  select?: string | string[],
+  {
+    onData,
+    onError,
+    onFinish,
+    onSettled,
+    onStart,
+    onSuccess,
+  }: TCallBacks<TData, TStatus> = {}
 ) => {
   const client = useReactiteClient();
   const [state, setState] = React.useState<TState<TData>>({
@@ -24,6 +33,8 @@ export const useQueryByPK = <TData extends object, TPK extends string | number>(
     success: false,
   });
   const fetcher = React.useCallback(async () => {
+    if (typeof onStart !== "undefined")
+      onStart({ data: null, status: "querying" });
     setState((s) => ({
       ...s,
       mutating: true,
@@ -31,7 +42,6 @@ export const useQueryByPK = <TData extends object, TPK extends string | number>(
     }));
     try {
       const pkName = getPKColumnName(client, tableName);
-
       const columns =
         typeof select !== "undefined"
           ? (typeof select === "string" ? [select] : select)
@@ -42,6 +52,14 @@ export const useQueryByPK = <TData extends object, TPK extends string | number>(
         `SELECT ${columns} FROM \`${tableName}\` WHERE ${pkName} = ?;`,
         pk
       );
+      if (typeof onSettled !== "undefined")
+        onSettled({ data, status: "success" });
+      if (typeof onData !== "undefined") onData({ data, status: "success" });
+      if (typeof onFinish !== "undefined")
+        onFinish({ data, status: "success" });
+      if (typeof onSuccess !== "undefined")
+        onSuccess({ data, status: "success" });
+
       setState((s) => ({
         ...s,
         status: "success",
@@ -51,9 +69,15 @@ export const useQueryByPK = <TData extends object, TPK extends string | number>(
         error: null,
       }));
     } catch (error: any) {
+      const msg = error.message;
+      if (typeof onError !== "undefined")
+        onError({ message: msg, status: "error" });
+      if (typeof onSettled !== "undefined")
+        onSettled({ data: null, status: "error" });
+
       setState((s) => ({
         ...s,
-        error: error.message,
+        error: msg,
         status: "error",
         success: false,
         mutating: false,

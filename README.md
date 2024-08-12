@@ -32,10 +32,11 @@
 - [`useQuery()` hook](#usequery-hook)
   - [`Arguments`](#arguments-1)
   - [`Return Values`](#return-values-1)
+    - [`callbacks`](#callbacks-1)
   - [`Usage Notes`](#usage-notes)
 - [`useMutation()` hook](#usemutation-hook)
   - [`Arguments`](#arguments-2)
-    - [`Mutation Callbacks`](#mutation-callbacks)
+    - [`callbacks`](#callbacks-2)
 - [`useMutationByPK()` hook](#usemutationbypk-hook)
   - [`Arguments`](#arguments-3)
 - [`useMutationByPKs()` hook](#usemutationbypks-hook)
@@ -43,11 +44,14 @@
 - [`useQueryByPK()` hook](#usequerybypk-hook)
   - [`Arguments`](#arguments-5)
   - [`Return Values`](#return-values-2)
+    - [`callbacks`](#callbacks-3)
 - [`useQueryByPKs()` hook.](#usequerybypks-hook)
   - [`Arguments`](#arguments-6)
   - [`Return Values`](#return-values-3)
+    - [`callbacks`](#callbacks-4)
 - [`Operands`](#operands)
 - [`Filters`](#filters)
+- [LICENSE](#license)
 
 ### Key Features
 
@@ -139,11 +143,11 @@ A custom React hook that manages the creation of SQL tables with various options
 
 #### `Arguments`
 
-| Parameter   | Type                     | Description                                                                                                                  |
-| ----------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `table`     | `Record<string, TTable>` | An object where each key is a table name and the value is the table's configuration (columns and options).                   |
-| `options`   | `CreateTableOptions`     | (Optional) Configuration options for table creation. Default is `{ skipIfExist: true, snakeCase: false, timestamps: true }`. |
-| `callbacks` | `TCallBacks`             | (Optional) An object containing callback functions for various stages of the table creation process.                         |
+| Parameter   | Type                                                               | Description                                                                                                                  |
+| ----------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `table`     | `Record<string, TTable>`                                           | An object where each key is a table name and the value is the table's configuration (columns and options).                   |
+| `options`   | `CreateTableOptions`                                               | (Optional) Configuration options for table creation. Default is `{ skipIfExist: true, snakeCase: false, timestamps: true }`. |
+| `callbacks` | `onError` \| `onSuccess` \| `onSettled` \| `onStart` \| `onFinish` | (Optional) An object containing callback functions for various stages of the table creation process.                         |
 
 ##### `options`
 
@@ -155,13 +159,13 @@ A custom React hook that manages the creation of SQL tables with various options
 
 ##### `callbacks`
 
-| Callback    | Type                                                                                                         | Description                                                                            |
-| ----------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| `onError`   | `(error: { message: string; status: "error" \| "success" \| "creating" \| null; }) => void`                  | Called when an error occurs during the table creation.                                 |
-| `onSuccess` | `(result: { tables: string[]; total: number; status: "error" \| "success" \| "creating" \| null; }) => void` | Called when the table creation is successful.                                          |
-| `onSettled` | `(result: { tables: string[]; total: number; status: "error" \| "success" \| "creating" \| null; }) => void` | Called when the table creation process is settled, regardless of success or failure.   |
-| `onStart`   | `(status: { tables: string[]; total: number; status: "error" \| "success" \| "creating" \| null; }) => void` | Called when the table creation process starts.                                         |
-| `onFinish`  | `(result: { tables: string[]; total: number; status: "error" \| "success" \| "creating" \| null; }) => void` | Called when the table creation process finishes, either successfully or with an error. |
+| Callback    | Description                                                                            |
+| ----------- | -------------------------------------------------------------------------------------- |
+| `onError`   | Called when an error occurs during the table creation.                                 |
+| `onSuccess` | Called when the table creation is successful.                                          |
+| `onSettled` | Called when the table creation process is settled, regardless of success or failure.   |
+| `onStart`   | Called when the table creation process starts.                                         |
+| `onFinish`  | Called when the table creation process finishes, either successfully or with an error. |
 
 #### `Return Values`
 
@@ -226,6 +230,19 @@ The `useQuery()` hook returns an object containing the following properties:
 | `status`       | `"error" \| "success" \| "querying" \| null` | Represents the current status of the query (e.g., querying, success, error, or null if idle).  |
 | `success`      | `boolean`                                    | Indicates whether the query was successful.                                                    |
 
+##### `callbacks`
+
+As a third argument the `useQuery` have callback functions that are called during the query operation.
+
+| Property    | Description                                                                    |
+| ----------- | ------------------------------------------------------------------------------ |
+| `onError`   | Called when an error occurs during the query process.                          |
+| `onSuccess` | Called when the query is successful.                                           |
+| `onSettled` | Called when the query process has completed, regardless of success or failure. |
+| `onStart`   | Called when the query process starts.                                          |
+| `onFinish`  | Called when the query process finishes.                                        |
+| `onData`    | Called when data is returned during the query process.                         |
+
 #### `Usage Notes`
 
 - The `useQuery()` hook is essential for fetching and displaying data from an SQLite database in your React Native components.
@@ -278,7 +295,7 @@ This hooks takes the following as arguments:
 | `operation` | `"insert" \| "update" \| "delete"`                                                      | The type of mutation operation to perform (`insert`, `update`, or `delete`).                          |
 | `callbacks` | [`onError`\| `onSuccess`\| `onSettled`\| `onStart`\| `onFinish` \| `onData` ](optional) | An object containing optional callback functions for handling various stages of the mutation process. |
 
-##### `Mutation Callbacks`
+##### `callbacks`
 
 | Property    | Description                                                                       |
 | ----------- | --------------------------------------------------------------------------------- |
@@ -432,6 +449,19 @@ const { data, error, querying, status, success, refetchQuery } = useQueryByPK<
 
 > 👍 **Note**: The difference between `useQuery` and `useQueryByPK` is that the former takes in filters, while the latter uses your primary key column to retrieve a single record by its value.
 
+##### `callbacks`
+
+As a third argument the `useQueryByPK` have callback functions that are called during the query operation.
+
+| Property    | Description                                                                    |
+| ----------- | ------------------------------------------------------------------------------ |
+| `onError`   | Called when an error occurs during the query process.                          |
+| `onSuccess` | Called when the query is successful.                                           |
+| `onSettled` | Called when the query process has completed, regardless of success or failure. |
+| `onStart`   | Called when the query process starts.                                          |
+| `onFinish`  | Called when the query process finishes.                                        |
+| `onData`    | Called when data is returned during the query process.                         |
+
 ### `useQueryByPKs()` hook.
 
 The `useQueryByPKs()` hook is designed to retrieve multiple records from a table in your SQLite database based on an array of primary keys. It also allows you to specify which columns to retrieve.
@@ -471,6 +501,19 @@ import { useQueryByPKs } from "reactite";
 | `refetchQuery` | `Function`                                   | A function to refetch the query.                                                                        |
 
 > 👍 **Note**: The difference between `useQueryByPK` and `useQueryByBKs` is that the former takes in a single value of id, while the latter uses list or array primary keys to retrieve records by their primary keys.
+
+##### `callbacks`
+
+As a third argument the `useQueryByPKs` have callback functions that are called during the query operation.
+
+| Property    | Description                                                                    |
+| ----------- | ------------------------------------------------------------------------------ |
+| `onError`   | Called when an error occurs during the query process.                          |
+| `onSuccess` | Called when the query is successful.                                           |
+| `onSettled` | Called when the query process has completed, regardless of success or failure. |
+| `onStart`   | Called when the query process starts.                                          |
+| `onFinish`  | Called when the query process finishes.                                        |
+| `onData`    | Called when data is returned during the query process.                         |
 
 ### `Operands`
 
@@ -528,3 +571,7 @@ Here are the filters that can be applied within `queries` and `mutations`.
 | `like`    | Checks if the value matches a specified pattern.                                               | `column LIKE $columnValue`                       |
 | `not`     | Checks if the value does not equal the specified criteria.                                     | `NOT column = $columnValue`                      |
 | `between` | Checks if the value is between two specified values. Requires exactly two values in the array. | `column BETWEEN $columnValue1 AND $columnValue2` |
+
+### LICENSE
+
+This project is using the [`MIT`](./LICENSE).

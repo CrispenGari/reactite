@@ -11,7 +11,7 @@
   "scripts": {
     "test": "jest --detectOpenHandles",
     "build": "tsup src/index.ts --format esm,cjs --dts",
-    "lint": "tsc && npx standard --fix",
+    "lint": "yarn add react --dev && tsc && npx standard --fix && yarn remove react",
     "ci": "yarn lint && yarn test && yarn build",
     "release": "yarn lint && yarn test && yarn build && changeset publish"
   },
@@ -61,11 +61,9 @@
   },
   "peerDependencies": {
     "expo": "^51.0.26",
-    "react": "^18.2.0",
     "react-native": "^0.74.5"
   },
   "dependencies": {
-    "expo-sqlite": "^14.0.6",
-    "react": "^18.3.1"
+    "expo-sqlite": "^14.0.6"
   }
 }

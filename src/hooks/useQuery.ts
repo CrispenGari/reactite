@@ -2,19 +2,29 @@ import React from "react";
 import { TFilter } from "../filter";
 import { TOperand } from "../operand";
 import { useReactiteClient } from "./useReactiteClient";
+import { TCallBacks } from "../types";
 
+type TStatus = "error" | "success" | "querying" | null;
 type TState<T> = {
   querying: boolean;
   data: T | null;
   error: string | null;
-  status: "error" | "success" | "querying" | null;
+  status: TStatus;
   success: boolean;
 };
 
-const useQuery = <TData extends object, TValue>(
+export const useQuery = <TData extends object, TValue>(
   tableName: string,
   filters?: TFilter<TValue> | TOperand<TValue>,
-  select?: string | string[]
+  select?: string | string[],
+  {
+    onData,
+    onError,
+    onFinish,
+    onSettled,
+    onStart,
+    onSuccess,
+  }: TCallBacks<TData, TStatus> = {}
 ) => {
   const client = useReactiteClient();
   const [state, setState] = React.useState<TState<TData>>({
@@ -26,6 +36,8 @@ const useQuery = <TData extends object, TValue>(
   });
 
   const get = React.useCallback(async () => {
+    if (typeof onStart !== "undefined")
+      onStart({ data: null, status: "querying" });
     setState((s) => ({
       ...s,
       mutating: true,
@@ -41,6 +53,15 @@ const useQuery = <TData extends object, TValue>(
       if (typeof filters === "undefined") {
         const stmt = `SELECT ${columns} FROM \`${tableName}\`;`;
         const data: TData[] = await client.getAllAsync(stmt, ...[]);
+
+        if (typeof onSettled !== "undefined")
+          onSettled({ data, status: "success" });
+        if (typeof onData !== "undefined") onData({ data, status: "success" });
+        if (typeof onFinish !== "undefined")
+          onFinish({ data, status: "success" });
+        if (typeof onSuccess !== "undefined")
+          onSuccess({ data, status: "success" });
+
         setState((s) => ({
           ...s,
           status: "success",
@@ -57,6 +78,13 @@ const useQuery = <TData extends object, TValue>(
             }, {})
           : filters.values;
         const data: TData[] = await client.getAllAsync(stmt, values);
+        if (typeof onSettled !== "undefined")
+          onSettled({ data, status: "success" });
+        if (typeof onData !== "undefined") onData({ data, status: "success" });
+        if (typeof onFinish !== "undefined")
+          onFinish({ data, status: "success" });
+        if (typeof onSuccess !== "undefined")
+          onSuccess({ data, status: "success" });
         setState((s) => ({
           ...s,
           status: "success",
@@ -67,9 +95,15 @@ const useQuery = <TData extends object, TValue>(
         }));
       }
     } catch (error: any) {
+      const msg = error.message;
+      if (typeof onError !== "undefined")
+        onError({ message: msg, status: "error" });
+      if (typeof onSettled !== "undefined")
+        onSettled({ data: null, status: "error" });
+
       setState((s) => ({
         ...s,
-        error: error.message,
+        error: msg,
         status: "error",
         success: false,
         mutating: false,
