@@ -5,7 +5,10 @@ type TState = {
   loading: boolean;
   tables: string[];
 };
-export const useTables = () => {
+export const useTables = (): {
+  loading: boolean;
+  tables: string[];
+} => {
   const client = useReactiteClient();
   const [state, setState] = React.useState<TState>({
     loading: true,

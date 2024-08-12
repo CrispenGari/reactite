@@ -23,7 +23,14 @@ export const useQueryByPK = <TData extends object, TPK extends string | number>(
     onStart,
     onSuccess,
   }: TCallBacks<TData, TStatus> = {}
-) => {
+): {
+  refetchQuery: () => Promise<void>;
+  querying: boolean;
+  data: TData | null;
+  error: string | null;
+  status: TStatus;
+  success: boolean;
+} => {
   const client = useReactiteClient();
   const [state, setState] = React.useState<TState<TData>>({
     data: null,

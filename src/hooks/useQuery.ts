@@ -7,7 +7,7 @@ import { TCallBacks } from "../types";
 type TStatus = "error" | "success" | "querying" | null;
 type TState<T> = {
   querying: boolean;
-  data: T | null;
+  data: T[] | null;
   error: string | null;
   status: TStatus;
   success: boolean;
@@ -25,7 +25,14 @@ export const useQuery = <TData extends object, TValue>(
     onStart,
     onSuccess,
   }: TCallBacks<TData, TStatus> = {}
-) => {
+): {
+  refetchQuery: () => Promise<void>;
+  querying: boolean;
+  data: TData[] | null;
+  error: string | null;
+  status: TStatus;
+  success: boolean;
+} => {
   const client = useReactiteClient();
   const [state, setState] = React.useState<TState<TData>>({
     data: null,
@@ -115,10 +122,9 @@ export const useQuery = <TData extends object, TValue>(
   React.useEffect(() => {
     get();
   }, []);
+
   return {
     ...state,
     refetchQuery: get,
   };
 };
-
-export default useQuery;

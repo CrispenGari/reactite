@@ -52,7 +52,15 @@ export const useCreateTables = (
   },
 
   { onError, onFinish, onSettled, onStart, onSuccess }: TCallBacks = {}
-) => {
+): {
+  retry: () => Promise<void>;
+  creating: boolean;
+  success: boolean;
+  error: string | null;
+  sql: string[];
+  tables: string[] | null;
+  status: "error" | "success" | "creating" | null;
+} => {
   const client = useReactiteClient();
   const [state, setState] = React.useState<TState>({
     creating: false,
