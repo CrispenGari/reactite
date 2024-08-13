@@ -73,3 +73,15 @@ export type FieldType<T extends SQLITE_TYPE = SQLITE_TYPE> = {
   primaryKey?: boolean;
   unique?: boolean;
 };
+
+export type TOrder = "asc" | "desc";
+
+export type TQueryOptions = {
+  limit?: number;
+  offset?: number;
+  order?: {
+    order: TOrder;
+    column: string;
+  };
+  distinct?: boolean;
+};

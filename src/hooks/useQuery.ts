@@ -2,7 +2,8 @@ import React from "react";
 import { TFilter } from "../filter";
 import { TOperand } from "../operand";
 import { useReactiteClient } from "./useReactiteClient";
-import { TCallBacks } from "../types";
+import { TCallBacks, TQueryOptions } from "../types";
+import { getQueryOptionSQL } from "../utils/query";
 
 type TStatus = "error" | "success" | "querying" | null;
 type TState<T> = {
@@ -17,6 +18,7 @@ export const useQuery = <TData extends object, TValue>(
   tableName: string,
   filters?: TFilter<TValue> | TOperand<TValue>,
   select?: string | string[],
+  options?: TQueryOptions,
   {
     onData,
     onError,
@@ -58,9 +60,18 @@ export const useQuery = <TData extends object, TValue>(
               .join(", ")
           : "*";
       if (typeof filters === "undefined") {
-        const stmt = `SELECT ${columns} FROM \`${tableName}\`;`;
-        const data: TData[] = await client.getAllAsync(stmt, ...[]);
+        const { optionsSQL, optionsVars } =
+          typeof options === "undefined"
+            ? { optionsSQL: "", optionsVars: {} }
+            : getQueryOptionSQL(options);
 
+        const stmt = `SELECT ${
+          options?.distinct ? "DISTINCT" : ""
+        } ${columns} FROM \`${tableName}\` ${optionsSQL};`;
+        const data: TData[] = await client.getAllAsync(
+          stmt,
+          optionsVars as any
+        );
         if (typeof onSettled !== "undefined")
           onSettled({ data, status: "success" });
         if (typeof onData !== "undefined") onData({ data, status: "success" });
@@ -74,17 +85,29 @@ export const useQuery = <TData extends object, TValue>(
           status: "success",
           success: true,
           querying: false,
-          data: data as any,
+          data,
           error: null,
         }));
       } else {
-        const stmt = `SELECT ${columns} FROM \`${tableName}\` WHERE ${filters.stmt};`;
+        const { optionsSQL, optionsVars } =
+          typeof options === "undefined"
+            ? { optionsSQL: "", optionsVars: {} }
+            : getQueryOptionSQL(options);
+
+        const stmt = `SELECT ${
+          options?.distinct ? "DISTINCT" : ""
+        } ${columns} FROM \`${tableName}\` WHERE ${
+          filters.stmt
+        }  ${optionsSQL};`;
         const values = Array.isArray(filters.values)
           ? filters.values.flat().reduce((acc: any, current: any) => {
               return { ...acc, ...current };
             }, {})
           : filters.values;
-        const data: TData[] = await client.getAllAsync(stmt, values);
+        const data: TData[] = await client.getAllAsync(stmt, {
+          ...values,
+          ...optionsVars,
+        });
         if (typeof onSettled !== "undefined")
           onSettled({ data, status: "success" });
         if (typeof onData !== "undefined") onData({ data, status: "success" });

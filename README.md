@@ -32,6 +32,7 @@
 - [`useQuery()` hook](#usequery-hook)
   - [`Arguments`](#arguments-1)
   - [`Return Values`](#return-values-1)
+    - [`Options`](#options-1)
     - [`callbacks`](#callbacks-1)
   - [`Usage Notes`](#usage-notes)
 - [`useMutation()` hook](#usemutation-hook)
@@ -204,9 +205,25 @@ const { data, error, querying, status, success, refetchQuery } = useQuery<
   {
     username: string;
     id: number;
+    avatar: string;
   }[],
   any
->("users", flt.eq("id", 2), ["id", "username"]);
+>(
+  "users",
+  flt.geq("id", 8),
+  ["id", "username", "avatar"],
+  {
+    distinct: true,
+    limit: 3,
+    offset: 1,
+    order: { column: "id", order: "asc" },
+  },
+  {
+    onSettled(result) {
+      console.log({ result });
+    },
+  }
+);
 ```
 
 #### `Arguments`
@@ -216,6 +233,8 @@ const { data, error, querying, status, success, refetchQuery } = useQuery<
 | `tableName` | `string`                                                | The name of the table from which you want to retrieve data.                                                                                                           |
 | `filters`   | `TFilter<TValue>` \| `TOperator<TValue>` \| `undefined` | Filters or conditions to be applied to the query, such as equality checks, ranges, etc. Can be an [operator](#operands) or [filter](#filters) provided by `reactite`. |
 | `select`    | `string` \| `string[]` \| `undefined`                   | The columns you want to retrieve from the table. If not provided, all columns are selected by default.                                                                |
+| `options`   | `TQueryOptions`                                         | Options to used when querying a record or records                                                                                                                     |
+| `callbacks` | `TCallbacks`                                            | Callbacks that get called during fetching a record using the hook.                                                                                                    |
 
 #### `Return Values`
 
@@ -230,9 +249,20 @@ The `useQuery()` hook returns an object containing the following properties:
 | `status`       | `"error" \| "success" \| "querying" \| null` | Represents the current status of the query (e.g., querying, success, error, or null if idle).  |
 | `success`      | `boolean`                                    | Indicates whether the query was successful.                                                    |
 
+##### `Options`
+
+The third option of this hook is `options` which are the option that are passed with a query. These options are:
+
+| Option     | Description                                                             |
+| ---------- | ----------------------------------------------------------------------- |
+| `distinct` | Specifies whether to return distinct results. (true means distinct)     |
+| `limit`    | Limits the number of results returned.                                  |
+| `offset`   | Specifies the number of rows to skip before starting to return results. |
+| `order`    | Defines the sorting order of the results.                               |
+
 ##### `callbacks`
 
-As a third argument the `useQuery` have callback functions that are called during the query operation.
+As a forth argument the `useQuery` have callback functions that are called during the query operation.
 
 | Property    | Description                                                                    |
 | ----------- | ------------------------------------------------------------------------------ |
