@@ -253,12 +253,12 @@ The `useQuery()` hook returns an object containing the following properties:
 
 The third option of this hook is `options` which are the option that are passed with a query. These options are:
 
-| Option     | Description                                                             |
-| ---------- | ----------------------------------------------------------------------- |
-| `distinct` | Specifies whether to return distinct results. (true means distinct)     |
-| `limit`    | Limits the number of results returned.                                  |
-| `offset`   | Specifies the number of rows to skip before starting to return results. |
-| `order`    | Defines the sorting order of the results.                               |
+| Option     | Type           | Description                                                             |
+| ---------- | -------------- | ----------------------------------------------------------------------- |
+| `distinct` | `boolean`      | Specifies whether to return distinct results. (`true` means distinct)   |
+| `limit`    | `number`       | Limits the number of results returned.                                  |
+| `offset`   | `number`       | Specifies the number of rows to skip before starting to return results. |
+| `order`    | `asc`\| `desc` | Defines the sorting order of the results.                               |
 
 ##### `callbacks`
 
