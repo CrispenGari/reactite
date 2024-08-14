@@ -140,7 +140,7 @@ export const useQuery = <TData extends object, TValue>(
         data: null,
       }));
     }
-  }, [tableName, filters]);
+  }, [tableName, filters, options]);
 
   React.useEffect(() => {
     get();

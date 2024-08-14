@@ -5,6 +5,15 @@ export type Prettify<T> = {
   [K in keyof T]: T[K];
 } & {};
 
+export type TPaginatedCallBacks<TPaginatedData, TStatus> = {
+  onError?: (error: { message: string; status: TStatus }) => void;
+  onSuccess?: (result: { data: TPaginatedData; status: TStatus }) => void;
+  onSettled?: (result: { data: TPaginatedData; status: TStatus }) => void;
+  onStart?: (status: { data: TPaginatedData; status: TStatus }) => void;
+  onFinish?: (result: { data: TPaginatedData; status: TStatus }) => void;
+  onData?: (result: { data: TPaginatedData; status: TStatus }) => void;
+};
+
 export type TCallBacks<TData, TStatus> = {
   onError?: (error: { message: string; status: TStatus }) => void;
   onSuccess?: (result: {
@@ -75,6 +84,16 @@ export type FieldType<T extends SQLITE_TYPE = SQLITE_TYPE> = {
 };
 
 export type TOrder = "asc" | "desc";
+
+export type TPaginatedQueryOptions = {
+  pageSize: number;
+  cursor?: string | number;
+  order?: {
+    order: TOrder;
+    column: string;
+  };
+  distinct?: boolean;
+};
 
 export type TQueryOptions = {
   limit?: number;

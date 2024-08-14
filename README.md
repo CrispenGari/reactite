@@ -35,23 +35,29 @@
     - [`Options`](#options-1)
     - [`callbacks`](#callbacks-1)
   - [`Usage Notes`](#usage-notes)
-- [`useMutation()` hook](#usemutation-hook)
+- [`usePaginatedQuery()` hook](#usepaginatedquery-hook)
   - [`Arguments`](#arguments-2)
-    - [`callbacks`](#callbacks-2)
-- [`useMutationByPK()` hook](#usemutationbypk-hook)
+  - [`TPaginatedQueryOptions`](#tpaginatedqueryoptions)
+  - [`Callbacks`](#callbacks-2)
+- [Return Types](#return-types)
+- [`useMutation()` hook](#usemutation-hook)
   - [`Arguments`](#arguments-3)
-- [`useMutationByPKs()` hook](#usemutationbypks-hook)
-  - [`Arguments`](#arguments-4)
-- [`useQueryByPK()` hook](#usequerybypk-hook)
-  - [`Arguments`](#arguments-5)
-  - [`Return Values`](#return-values-2)
     - [`callbacks`](#callbacks-3)
-- [`useQueryByPKs()` hook.](#usequerybypks-hook)
+- [`useMutationByPK()` hook](#usemutationbypk-hook)
+  - [`Arguments`](#arguments-4)
+- [`useMutationByPKs()` hook](#usemutationbypks-hook)
+  - [`Arguments`](#arguments-5)
+- [`useQueryByPK()` hook](#usequerybypk-hook)
   - [`Arguments`](#arguments-6)
-  - [`Return Values`](#return-values-3)
+  - [`Return Values`](#return-values-2)
     - [`callbacks`](#callbacks-4)
+- [`useQueryByPKs()` hook.](#usequerybypks-hook)
+  - [`Arguments`](#arguments-7)
+  - [`Return Values`](#return-values-3)
+    - [`callbacks`](#callbacks-5)
 - [`Operands`](#operands)
 - [`Filters`](#filters)
+- [Examples](#examples)
 - [LICENSE](#license)
 
 ### Key Features
@@ -279,6 +285,84 @@ As a forth argument the `useQuery` have callback functions that are called durin
 - Use the `refetchQuery` method to manually refresh the data when needed, such as in response to user actions.
 - The `querying` state is useful for displaying loading indicators during data fetching.
 - The `error` and `status` properties provide detailed error handling, allowing you to respond appropriately to query failures.
+
+> 👍 If you want to do pagination with your `SQLite` `reactite` exposes a hook called `usePaginatedQuery()` which is different from the `useQuery()` in the sense that this hoot returns a paginated result instead of a regular query result.
+
+### `usePaginatedQuery()` hook
+
+The `usePaginatedQuery` hook is designed to fetch paginated data from a SQLite table with various options for `filtering`, `selecting` specific columns, and handling different stages of the query process through callbacks.
+
+```ts
+import { usePaginatedQuery } from "reactite";
+
+const { data, error, querying, status, success, fetchNextPage, refetchPage } =
+  usePaginatedQuery<
+    {
+      username: string;
+      id: number;
+      avatar: string;
+    }[],
+    any
+  >(
+    "users",
+    {
+      distinct: true,
+      pageSize: 2,
+      order: { column: "id", order: "asc" },
+      cursor: 1,
+    },
+    flt.gt("id", 5),
+    ["id", "username", "avatar"],
+    {
+      onSettled({ data }) {},
+    }
+  );
+```
+
+#### `Arguments`
+
+| Argument    | Type                                                             | Description                                                                                  |
+| ----------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `tableName` | `string`                                                         | The name of the table to query.                                                              |
+| `options`   | `TPaginatedQueryOptions`                                         | Options for configuring pagination, ordering, and other query-related settings.              |
+| `filters`   | `TFilter<TValue> \| TOperand<TValue>` (optional)                 | Filters or operands to apply to the query for conditional data retrieval.                    |
+| `select`    | `string \| string[]` (optional)                                  | Columns to select from the table. If not provided, all columns are selected.                 |
+| `callbacks` | `TPaginatedCallBacks<TPaginatedData<TData>, TStatus>` (optional) | Callbacks to handle different stages of the query (e.g., onStart, onSuccess, onError, etc.). |
+
+#### `TPaginatedQueryOptions`
+
+| Option     | Type                                         | Description                                                                                                |
+| ---------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `distinct` | `boolean`                                    | Whether to return distinct rows only.                                                                      |
+| `pageSize` | `number`                                     | The number of records to fetch per page.                                                                   |
+| `order`    | `{ column: string, order: "asc" \| "desc" }` | The column and order to sort the results.                                                                  |
+| `cursor`   | `number` \| `string`                         | The cursor value to start the pagination from based on the type of the primary key column your your table. |
+
+#### `Callbacks`
+
+| Callback    | Type                                                                            | Description                                                                   |
+| ----------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `onData`    | `(data: TPaginatedData<TData>) => void` (optional)                              | Callback triggered when data is successfully fetched.                         |
+| `onError`   | `(error: string) => void` (optional)                                            | Callback triggered when an error occurs during the query.                     |
+| `onFinish`  | `(status: TStatus) => void` (optional)                                          | Callback triggered when the query finishes, regardless of success or failure. |
+| `onSettled` | `(result: { data: TPaginatedData<TData>; status: TStatus }) => void` (optional) | Callback triggered after the query has settled, whether successful or not.    |
+| `onStart`   | `(status: TStatus) => void` (optional)                                          | Callback triggered when the query starts.                                     |
+| `onSuccess` | `(result: { data: TPaginatedData<TData>; status: TStatus }) => void` (optional) | Callback triggered when the query is successful.                              |
+
+### Return Types
+
+| Return Value    | Type                    | Description                                                            |
+| --------------- | ----------------------- | ---------------------------------------------------------------------- |
+| `refetchPage`   | `() => Promise<void>`   | Function to refetch the current page of data.                          |
+| `fetchNextPage` | `() => Promise<void>`   | Function to fetch the next page of data.                               |
+| `querying`      | `boolean`               | Indicates whether the query is currently being executed.               |
+| `data`          | `TPaginatedData<TData>` | The paginated data returned from the query.                            |
+| `error`         | `string \| null`        | Error message, if any, returned during the query.                      |
+| `status`        | `TStatus`               | The current status of the query (e.g., "loading", "error", "success"). |
+| `success`       | `boolean`               | Indicates whether the query was successful.                            |
+| `hasNextPage`   | `boolean`               | Indicates if there is another page of data available.                  |
+| `isFirstPage`   | `boolean`               | Indicates if the current page is the first page.                       |
+| `isLastPage`    | `boolean`               | Indicates if the current page is the last page.                        |
 
 ### `useMutation()` hook
 
@@ -601,6 +685,13 @@ Here are the filters that can be applied within `queries` and `mutations`.
 | `like`    | Checks if the value matches a specified pattern.                                               | `column LIKE $columnValue`                       |
 | `not`     | Checks if the value does not equal the specified criteria.                                     | `NOT column = $columnValue`                      |
 | `between` | Checks if the value is between two specified values. Requires exactly two values in the array. | `column BETWEEN $columnValue1 AND $columnValue2` |
+
+### Examples
+
+In this section we are going to create 2 applications that demonstrate how to use `reactite` in a react native expo project.
+
+1. [Basic Crud](./examples/)
+2. [Pagination Example](./examples/)
 
 ### LICENSE
 
