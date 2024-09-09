@@ -45,6 +45,14 @@
       "commonjs",
       "node",
       "jest"
+    ],
+    "ignore": [
+      "/dist/",
+      "/docs/",
+      "**/out/",
+      "/lib/select2/",
+      "/lib/ckeditor/",
+      "tmp.js"
     ]
   },
   "engines": {
