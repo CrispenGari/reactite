@@ -1,0 +1,11 @@
+{
+  "readme": "./documentation/introduction.md",
+  "name": "Reactite Documentation",
+  "out": "docs/web",
+  "exclude": [
+    "src/*+(App|.test|index|setupTests|serviceWorker).ts*",
+    "**/**/dist/*"
+  ],
+  "excludePrivate": true,
+  "theme": "pages-plugin"
+}

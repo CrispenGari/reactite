@@ -58,6 +58,8 @@
 - [`Operands`](#operands)
 - [`Filters`](#filters)
 - [Examples](#examples)
+- [Contribution](#contribution)
+- [Change logs.](#change-logs)
 - [LICENSE](#license)
 
 ### Key Features
@@ -692,6 +694,14 @@ In this section we are going to create 2 applications that demonstrate how to us
 
 1. [Basic Crud](./examples/)
 2. [Pagination Example](./examples/)
+
+### Contribution
+
+To contribute follow our guides in the [`CONTRIBUTION.md` file](./CONTRIBUTION.md)
+
+### Change logs.
+
+All the changes that will be done to `reactite` will be documented in the [`CHANGELOG.md`](./CHANGELOG.md)
 
 ### LICENSE
 

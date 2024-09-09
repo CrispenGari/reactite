@@ -1,8 +1,10 @@
 import React from "react";
-import { TFilter } from "../filter";
-import { TOperand } from "../operand";
 import { useReactiteClient } from "./useReactiteClient";
-import { TPaginatedCallBacks, TPaginatedQueryOptions } from "../types";
+import {
+  Prettify,
+  TPaginatedCallBacks,
+  TPaginatedQueryOptions,
+} from "../types";
 import { getPaginatedQueryOptionSQL } from "../utils/query";
 import { getPKColumnName } from "../utils";
 
@@ -34,11 +36,95 @@ type TState<T> = {
   isLastPage: boolean;
 };
 
+/**
+ * A hook that performs paginated queries on a given table.
+ *
+ * @template TData - The shape of the data returned from the query.
+ * @template TValue - The type of value used for filtering or options.
+ *
+ * @param {string} tableName - The name of the table to query.
+ * @param {TPaginatedQueryOptions<TValue>} options - The query options, including filters, columns to select, distinct rows, page size, and more.
+ * @param {TPaginatedCallBacks<TPaginatedData<TData>, TStatus>} callbacks - Optional callbacks for lifecycle events like `onData`, `onError`, `onFinish`, `onSettled`, `onStart`, and `onSuccess`.
+ *
+ * @returns {Object} - An object containing:
+ *   - `refetchPage`: Function to refetch the current page.
+ *   - `fetchNextPage`: Function to fetch the next page of data.
+ *   - `querying`: Boolean indicating if the query is in progress.
+ *   - `data`: The paginated data result.
+ *   - `error`: Error message if the query fails.
+ *   - `status`: The status of the query (e.g., 'success', 'error', etc.).
+ *   - `success`: Boolean indicating if the query was successful.
+ *   - `hasNextPage`: Boolean indicating if there are more pages to fetch.
+ *   - `isFirstPage`: Boolean indicating if the current page is the first page.
+ *   - `isLastPage`: Boolean indicating if the current page is the last page.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { View, Text, Button, FlatList, Image } from 'react-native';
+ * import { usePaginatedQuery, flt } from 'reactite';
+ *
+ * const UsersList: React.FC = () => {
+ *   const { data, error, querying, status, success, fetchNextPage, refetchPage } = usePaginatedQuery<
+ *     { username: string; id: number; avatar: string },
+ *     any
+ *   >(
+ *     'users', // The table to query
+ *     {
+ *       filters: flt.gt('id', 5), // Filters users with id > 5
+ *       select: ['id', 'username', 'avatar'], // Selects specific columns
+ *       distinct: true, // Ensures distinct rows
+ *       pageSize: 2, // Limits to 2 users per page
+ *       order: { column: 'id', order: 'asc' }, // Orders by 'id' ascending
+ *       cursor: 1, // Starts from cursor 1
+ *     },
+ *     {
+ *       onSettled({ data: { page, hasNextPage, isFirstPage, isLastPage, items, nextCursor } }) {
+ *         console.log('Query settled with page data:', page);
+ *       },
+ *     }
+ *   );
+ *
+ *   return (
+ *     <View>
+ *       <Text>User List</Text>
+ *       {querying && <Text>Loading...</Text>}
+ *       {error && <Text>Error: {error}</Text>}
+ *       {success && (
+ *         <FlatList
+ *           data={data.page}
+ *           keyExtractor={(item) => item.id.toString()}
+ *           renderItem={({ item }) => (
+ *             <View style={{ flexDirection: 'row', marginVertical: 10 }}>
+ *               <Image
+ *                 source={{ uri: item.avatar }}
+ *                 style={{ width: 50, height: 50, marginRight: 10 }}
+ *               />
+ *               <Text>{item.username}</Text>
+ *             </View>
+ *           )}
+ *         />
+ *       )}
+ *       <Button
+ *         title="Load Next Page"
+ *         onPress={fetchNextPage}
+ *         disabled={querying || !data.hasNextPage}
+ *       />
+ *       <Button
+ *         title="Refetch Page"
+ *         onPress={refetchPage}
+ *         disabled={querying}
+ *       />
+ *     </View>
+ *   );
+ * };
+ * ```
+ *
+ * @see {@link https://github.com/CrispenGari/reactite#usepaginatedquery-hook | usePaginatedQuery documentation}
+ */
 export const usePaginatedQuery = <TData extends object, TValue>(
   tableName: string,
-  options: TPaginatedQueryOptions,
-  filters?: TFilter<TValue> | TOperand<TValue>,
-  select?: string | string[],
+  options: TPaginatedQueryOptions<TValue>,
   {
     onData,
     onError,
@@ -102,6 +188,8 @@ export const usePaginatedQuery = <TData extends object, TValue>(
       }));
       const noCursor = typeof cursor === "undefined";
       try {
+        const select = options.select;
+        const filters = options.filters;
         const columns =
           typeof select !== "undefined"
             ? (typeof select === "string" ? [select] : select)
@@ -139,7 +227,7 @@ export const usePaginatedQuery = <TData extends object, TValue>(
             ? undefined
             : lastItem[pkName.replace(/`/g, "")];
 
-          const paginatedResult: TPaginatedData<TData> = {
+          const paginatedResult: Prettify<TPaginatedData<TData>> = {
             hasNextPage,
             items: data.length,
             nextCursor,
@@ -290,7 +378,7 @@ export const usePaginatedQuery = <TData extends object, TValue>(
         }));
       }
     },
-    [tableName, filters, options]
+    [tableName, options]
   );
   React.useEffect(() => {
     get(true, "querying-first-page", options.cursor);

@@ -1,0 +1,19 @@
+{
+  "groups": [
+    {
+      "title": "Get Started",
+      "source": "./documentation/getStarted",
+      "pages": [
+        {
+          "title": "Quick Start",
+          "source": "quickStart.md"
+        },
+        {
+          "title": "Installation",
+          "source": "installation.md"
+        }
+      ]
+    }
+  ],
+  "theme": "pages-plugin"
+}

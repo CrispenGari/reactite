@@ -1,5 +1,7 @@
 import * as SQLite from "expo-sqlite";
 import { field } from "../field";
+import { TFilter } from "../filter";
+import { TOperand } from "../operand";
 
 export type Prettify<T> = {
   [K in keyof T]: T[K];
@@ -13,7 +15,6 @@ export type TPaginatedCallBacks<TPaginatedData, TStatus> = {
   onFinish?: (result: { data: TPaginatedData; status: TStatus }) => void;
   onData?: (result: { data: TPaginatedData; status: TStatus }) => void;
 };
-
 export type TCallBacks<TData, TStatus> = {
   onError?: (error: { message: string; status: TStatus }) => void;
   onSuccess?: (result: {
@@ -84,8 +85,11 @@ export type FieldType<T extends SQLITE_TYPE = SQLITE_TYPE> = {
 };
 
 export type TOrder = "asc" | "desc";
+export type TAggregationFn = "count" | "avg" | "min" | "max" | "sum";
 
-export type TPaginatedQueryOptions = {
+export type TPaginatedQueryOptions<TValue> = {
+  filters?: TFilter<TValue> | TOperand<TValue>;
+  select?: string | string[];
   pageSize: number;
   cursor?: string | number;
   order?: {
@@ -94,8 +98,17 @@ export type TPaginatedQueryOptions = {
   };
   distinct?: boolean;
 };
-
-export type TQueryOptions = {
+export type TQueryByPKOptions<TPK> = {
+  pk: TPK;
+  select?: string | string[];
+};
+export type TQueryQueryByPKs<TPKs> = {
+  pks: TPKs;
+  select?: string | string[];
+};
+export type TQueryOptions<TValue> = {
+  filters?: TFilter<TValue> | TOperand<TValue>;
+  select?: string | string[];
   limit?: number;
   offset?: number;
   order?: {
@@ -103,4 +116,13 @@ export type TQueryOptions = {
     column: string;
   };
   distinct?: boolean;
+  // aggregation?: {
+  //   groupBy: string[];
+  //   fn: TAggregationFn;
+  //   having: {
+  //     column: "*" | string;
+  //     filters: TFilter<TValue> | TOperand<TValue>;
+  //   };
+  //   returnAggregationColumn: boolean;
+  // };
 };

@@ -43,6 +43,57 @@ type TCallBacks = {
   }) => void;
 };
 
+/**
+ * Custom hook to create tables in the database. This hook generates SQL statements
+ * to create tables based on the provided schema and executes them in a transaction.
+ * It provides state and callbacks for handling the creation process.
+ *
+ * @param {Record<string, TTable>} table - An object where each key is a table name and each value is the table schema.
+ * @param {CreateTableOptions} [options={ skipIfExist: true, snakeCase: false, timestamps: true }] - Options to configure table creation.
+ * @param {TCallBacks} [callbacks={}] - Callbacks to handle various stages of the table creation process.
+ * @returns {{
+ *   retry: () => Promise<void>;
+ *   creating: boolean;
+ *   success: boolean;
+ *   error: string | null;
+ *   sql: string[];
+ *   tables: string[] | null;
+ *   status: "error" | "success" | "creating" | null;
+ * }} - Returns the state and a retry function for the table creation process.
+ *
+ * @example
+ * import { useCreateTables } from 'reactite'
+ *
+ * const App = ()=>{
+ *
+ *  const { retry, creating, error, sql, status, success, tables } = useCreateTables(
+ *    {
+ *       posts: {
+ *         fields: {
+ *           title: field.unique().type("TEXT"),
+ *         },
+ *         timestamps: true,
+ *        snakeCase: true,
+ *        },
+ *      users: {
+ *        fields: {
+ *           username: field.unique().type("TEXT"),
+ *          password: field.type("TEXT"),
+ *          avatar: field.type("TEXT").nullable().default("hello.jpg"),
+ *          id: field.type("INTEGER").pk().autoIncrement(),
+ *        },
+ *        snakeCase: false,
+ *        timestamps: false,
+ *        skipIfExist: true,
+ *      },
+ *     },
+ *    { skipIfExist: true }
+ *  );
+ * return null
+ * )
+ *
+ * @see [useCreateTables Hook Documentation](https://github.com/CrispenGari/reactite?tab=readme-ov-file#usecreatetables-hook)
+ */
 export const useCreateTables = (
   table: Record<string, TTable>,
   options: CreateTableOptions = {
@@ -137,7 +188,7 @@ export const useCreateTables = (
     }
   }, [options, table]);
 
-  const retry = () => createTable();
+  const retry = async () => await createTable();
 
   React.useEffect(() => {
     createTable();

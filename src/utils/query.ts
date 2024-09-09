@@ -1,6 +1,10 @@
 import { TPaginatedQueryOptions, TQueryOptions } from "../types";
 
-export const getQueryOptionSQL = ({ limit, offset, order }: TQueryOptions) => {
+export const getQueryOptionSQL = <TValue>({
+  limit,
+  offset,
+  order,
+}: TQueryOptions<TValue>) => {
   const column = order?.column ? `\`${order.column}\`` : "";
   const sql = `
         ${!!order ? `ORDER BY ${column} ${order.order.toUpperCase()}` : ""} 
@@ -13,10 +17,10 @@ export const getQueryOptionSQL = ({ limit, offset, order }: TQueryOptions) => {
   };
 };
 
-export const getPaginatedQueryOptionSQL = ({
+export const getPaginatedQueryOptionSQL = <TValue>({
   pageSize,
   order,
-}: TPaginatedQueryOptions) => {
+}: TPaginatedQueryOptions<TValue>) => {
   const column = order?.column ? `\`${order.column}\`` : "";
   const sql = `
         ${!!order ? `ORDER BY ${column} ${order.order.toUpperCase()}` : ""} 

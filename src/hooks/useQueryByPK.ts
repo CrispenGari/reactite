@@ -1,7 +1,7 @@
 import React from "react";
 import { useReactiteClient } from "./useReactiteClient";
 import { getPKColumnName } from "../utils";
-import { TCallBacks } from "../types";
+import { TCallBacks, TQueryByPKOptions } from "../types";
 
 type TStatus = "error" | "success" | "querying" | null;
 type TState<T> = {
@@ -11,10 +11,76 @@ type TState<T> = {
   status: TStatus;
   success: boolean;
 };
+/**
+ * A hook that performs a query on a table based on a single primary key.
+ *
+ * @template TData - The shape of the data returned from the query.
+ * @template TPK - The type of primary key used for filtering.
+ *
+ * @param {string} tableName - The name of the table to query.
+ * @param {TQueryByPKOptions<TPK>} options - The query options, including primary key to filter and columns to select.
+ * @param {TCallBacks<TData, TStatus>} [callbacks] - Optional callbacks for lifecycle events like `onData`, `onError`, `onFinish`, `onSettled`, `onStart`, and `onSuccess`.
+ *
+ * @returns {Object} - An object containing:
+ *   - `refetchQuery`: Function to refetch the data.
+ *   - `querying`: Boolean indicating if the query is in progress.
+ *   - `data`: The fetched data as a `TData` object, or `null` if no data is available yet.
+ *   - `error`: Error message if the query fails.
+ *   - `status`: The status of the query (e.g., 'success', 'error', etc.).
+ *   - `success`: Boolean indicating if the query was successful.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { View, Text, Button, Image } from 'react-native';
+ * import { useQueryByPK, flt } from 'reactite';
+ *
+ * const UserDetail: React.FC = () => {
+ *   const { data, error, querying, status, success, refetchQuery } = useQueryByPK<
+ *     { username: string; id: number; avatar: string },
+ *     number
+ *   >(
+ *     'users', // The table to query
+ *     {
+ *       pk: 1, // Primary key to filter
+ *       select: ['id', 'username', 'avatar'], // Selects specific columns
+ *     },
+ *     {
+ *       onSettled({ data }) {
+ *         console.log('Query settled with data:', data);
+ *       },
+ *     }
+ *   );
+ *
+ *   return (
+ *     <View>
+ *       <Text>User Detail</Text>
+ *       {querying && <Text>Loading...</Text>}
+ *       {error && <Text>Error: {error}</Text>}
+ *       {success && data && (
+ *         <View style={{ flexDirection: 'row', marginVertical: 10 }}>
+ *           <Image
+ *             source={{ uri: data.avatar }}
+ *             style={{ width: 50, height: 50, marginRight: 10 }}
+ *           />
+ *           <Text>{data.username}</Text>
+ *         </View>
+ *       )}
+ *       <Button
+ *         title="Refetch Data"
+ *         onPress={refetchQuery}
+ *         disabled={querying}
+ *       />
+ *     </View>
+ *   );
+ * };
+ * ```
+ *
+ * @see {@link https://github.com/CrispenGari/reactite#usequerybypk-hook | useQueryByPK documentation}
+ */
 export const useQueryByPK = <TData extends object, TPK extends string | number>(
   tableName: string,
-  pk: TPK,
-  select?: string | string[],
+  options: TQueryByPKOptions<TPK>,
   {
     onData,
     onError,
@@ -48,6 +114,8 @@ export const useQueryByPK = <TData extends object, TPK extends string | number>(
       status: "querying",
     }));
     try {
+      const select = options.select;
+      const pk = options.pk;
       const pkName = getPKColumnName(client, tableName);
       const columns =
         typeof select !== "undefined"
@@ -91,7 +159,7 @@ export const useQueryByPK = <TData extends object, TPK extends string | number>(
         data: null,
       }));
     }
-  }, [pk, tableName, select]);
+  }, [tableName, options]);
 
   React.useEffect(() => {
     fetcher();

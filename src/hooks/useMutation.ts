@@ -42,6 +42,58 @@ export function useMutation<TData extends object>(
   Prettify<TState<TData[]>>
 ];
 
+/**
+ * A hook that performs ``insert``, ``update``, or ``delete`` mutations on a table.
+ *
+ * @template TData - The shape of the data involved in the mutation.
+ *
+ * @param {string} tableName - The name of the table to mutate.
+ * @param {TOperation} operation - The type of operation to perform ('insert', 'update', or 'delete').
+ * @param {TCallBacks<TData, TStatus>} [callbacks] - Optional callbacks for lifecycle events like `onData`, `onError`, `onFinish`, `onSettled`, `onStart`, and `onSuccess`.
+ *
+ * @returns {[
+ *   (data: T | T[]) => Promise<void> | (filters: TFilter<any> | TOperand<TFilter<any>[] | TFilter<any>>, values?: Partial<TData>) => Promise<void> | (filters: TFilter<any> | TOperand<TFilter<any>>) => Promise<void>,
+ *   Prettify<TState<TData>>
+ * ]}
+ * - The first element is a function to perform the specified mutation operation.
+ * - The second element is the current state of the mutation including `mutating`, `data`, `error`, `status`, and `success`.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { Button } from 'react-native';
+ * import { useMutation, flt, op } from 'reactite';
+ *
+ * const Post: React.FC = () => {
+ *   const [mutateAsync, { mutating }] = useMutation<{
+ *     id: string;
+ *     username: string;
+ *     avatar: string | null;
+ *     password: string;
+ *     createAt: string;
+ *     updatedAt: string;
+ *   }>("users", "delete", {
+ *     onData(result) {
+ *       console.log(JSON.stringify(result, null, 2));
+ *     },
+ *     onError(error) {
+ *       console.log(error);
+ *     },
+ *   });
+ *
+ *   return (
+ *     <Button
+ *       title="Delete"
+ *       onPress={async () => {
+ *         await mutateAsync(op.or(flt.eq("id", 1), flt.in("id", [10, 11])));
+ *       }}
+ *     />
+ *   );
+ * };
+ * ```
+ *
+ * @see {@link https://github.com/CrispenGari/reactite#usemutation-hook | useMutation Documentation}
+ */
 export function useMutation<TData extends object>(
   tableName: string,
   operation: TDelete,

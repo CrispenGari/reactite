@@ -1,7 +1,7 @@
 {
   "name": "reactite",
-  "version": "0.0.4",
-  "description": "This is a simple react-native orm for sqlite3.",
+  "version": "1.0.0",
+  "description": "This is a simple react-native and expo orm for sqlite3.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -13,7 +13,8 @@
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "lint": "yarn add react --dev && tsc && npx standard --fix && yarn remove react",
     "ci": "yarn lint && yarn test && yarn build",
-    "release": "yarn lint && yarn test && yarn build && changeset publish"
+    "release": "yarn lint && yarn test && yarn build && changeset publish",
+    "document": "typedoc --options typedoc.json"
   },
   "repository": {
     "type": "git",
@@ -47,7 +48,7 @@
     ]
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.0.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.25.3",
@@ -58,6 +59,8 @@
     "jest": "^29.7.0",
     "standard": "^17.1.0",
     "tsup": "^8.2.4",
+    "typedoc": "^0.26.5",
+    "typedoc-plugin-pages": "^1.1.0",
     "typescript": "^5.5.4"
   },
   "peerDependencies": {

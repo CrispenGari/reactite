@@ -32,6 +32,59 @@ export function useMutationByPKs<TData extends object>(
   callbacks?: TCallBacks<TData[], TStatus>
 ): [(id: Array<string | number>) => Promise<void>, TState<null>];
 
+/**
+ * A hook for performing update or delete mutations by an array of primary keys.
+ *
+ * @template TData - The shape of the data involved in the mutation.
+ *
+ * @param {string} tableName - The name of the table to mutate.
+ * @param {TUpdate | TDelete} operation - The type of operation to perform ('update' or 'delete').
+ * @param {TCallBacks<TData[], TStatus>} [callbacks] - Optional callbacks for lifecycle events like `onData`, `onError`, `onFinish`, `onSettled`, `onStart`, and `onSuccess`.
+ *
+ * @returns {[
+ *   (id: Array<string | number>, values?: Partial<TData>) => Promise<void> | (id: Array<string | number>) => Promise<void>,
+ *   Prettify<TState<TData[]>>
+ * ]}
+ * - For 'update': A function to perform the update operation by an array of primary keys, accepting the primary keys and values to update.
+ * - For 'delete': A function to perform the delete operation by an array of primary keys, accepting only the primary keys.
+ * - The second element is the current state of the mutation including `mutating`, `data`, `error`, `status`, and `success`.
+ *
+ * @example
+ * ```tsx
+ * import React from 'react';
+ * import { Button } from 'react-native';
+ * import { useMutationByPKs } from 'reactite';
+ *
+ * const Post: React.FC = () => {
+ *   const [mutateAsync, { mutating }] = useMutationByPKs<{
+ *     id: string;
+ *     username: string;
+ *     avatar: string | null;
+ *     password: string;
+ *     createAt: string;
+ *     updatedAt: string;
+ *   }>("users", "update", {
+ *     onData(result) {
+ *       console.log(JSON.stringify(result, null, 2));
+ *     },
+ *     onError(error) {
+ *       console.log(error);
+ *     },
+ *   });
+ *
+ *   return (
+ *     <Button
+ *       title="Update"
+ *       onPress={async () => {
+ *         await mutateAsync(["123", "456"], { username: "newUsername" });
+ *       }}
+ *     />
+ *   );
+ * };
+ * ```
+ *
+ * @see {@link https://github.com/CrispenGari/reactite#usemutationbypks-hook | useMutationByPKs documentation}
+ */
 export function useMutationByPKs<TData extends object>(
   tableName: string,
   operation: TOperation,
